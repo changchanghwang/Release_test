@@ -5,11 +5,10 @@ on:
     types: [closed]
     branches:
       - main
-      - master # main 또는 master 브랜치에 머지될 때만
 
 jobs:
   create-release:
-    if: github.event.pull_request.merged == true && (github.event.pull_request.base.ref == 'main' || github.event.pull_request.base.ref == 'master')
+    if: github.event.pull_request.merged == true && (github.event.pull_request.base.ref == 'main')
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -20,7 +19,7 @@ jobs:
 
       - name: Generate ISO timestamp
         id: timestamp
-        run: echo "ISO_TIME=$(date -u +"%Y-%m-%dT%H:%M:%SZ")" >> $GITHUB_OUTPUT
+        run: echo "ISO_TIME=$(TZ='Asia/Seoul' date +"%Y-%m-%dT%H:%M:%S+09:00")" >> $GITHUB_OUTPUT
 
       - name: Create Release Note Body
         id: release_body
@@ -32,6 +31,17 @@ jobs:
           PR_AUTHOR="${{ github.event.pull_request.user.login }}"
           PR_BODY="${{ github.event.pull_request.body }}"
 
+          # 라벨 처리
+          LABELS_JSON='${{ toJson(github.event.pull_request.labels) }}'
+          LABELS=""
+          if [[ "$LABELS_JSON" != "[]" && "$LABELS_JSON" != "null" ]]; then
+            LABELS=$(echo "$LABELS_JSON" | jq -r '.[] | .name' | while read label; do
+              echo "- \`$label\`"
+            done)
+          else
+            LABELS="- *No labels*"
+          fi
+
           # 릴리즈 노트 본문 생성
           RELEASE_BODY="## PR Information
 
@@ -39,6 +49,10 @@ jobs:
           **PR Title**: $PR_TITLE
           **Author**: @$PR_AUTHOR
           **Merged at**: ${{ steps.timestamp.outputs.ISO_TIME }}
+
+          ## Labels
+
+          $LABELS
 
           ## PR Description
 
@@ -57,26 +71,14 @@ jobs:
         id: tag
         run: |
           # 태그 네임 생성 (예: v2024.01.15.143052)
-          TAG_NAME="v$(date -u +"%Y.%m.%d.%H%M%S")"
+          TAG_NAME="v$(TZ='Asia/Seoul' date +"%Y.%m.%d.%H%M%S")"
           echo "TAG_NAME=$TAG_NAME" >> $GITHUB_OUTPUT
 
       - name: Create Release
-        uses: actions/create-release@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ steps.tag.outputs.TAG_NAME }}
-          release_name: ${{ steps.timestamp.outputs.ISO_TIME }}
-          body: ${{ steps.release_body.outputs.RELEASE_BODY }}
-          draft: false
-          prerelease: false
-
-      # 선택사항: GitHub의 새로운 릴리즈 API 사용
-      # - name: Create Release (using gh CLI)
-      #   env:
-      #     GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #   run: |
-      #     gh release create "${{ steps.tag.outputs.TAG_NAME }}" \
-      #       --title "${{ steps.timestamp.outputs.ISO_TIME }}" \
-      #       --notes "${{ steps.release_body.outputs.RELEASE_BODY }}" \
-      #       --target ${{ github.sha }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${{ steps.tag.outputs.TAG_NAME }}" \
+            --title "${{ steps.timestamp.outputs.ISO_TIME }}" \
+            --notes "${{ steps.release_body.outputs.RELEASE_BODY }}" \
+            --target ${{ github.sha }}
