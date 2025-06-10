@@ -19,7 +19,7 @@ jobs:
 
       - name: Generate ISO timestamp
         id: timestamp
-        run: echo "ISO_TIME=$(TZ='Asia/Seoul' date +"%Y-%m-%dT%H:%M:%S+09:00")" >> $GITHUB_OUTPUT
+        run: echo "ISO_TIME=$(TZ='Asia/Seoul' date +"%Y-%m-%d %H:%M:%S")" >> $GITHUB_OUTPUT
 
       - name: Create Release Note Body
         id: release_body
@@ -55,8 +55,7 @@ jobs:
       - name: Generate tag name
         id: tag
         run: |
-          # 태그 네임 생성 (예: v2024.01.15.143052)
-          TAG_NAME="v$(TZ='Asia/Seoul' date +"%Y.%m.%d.%H%M%S")"
+          TAG_NAME="v$(TZ='Asia/Seoul' date +"%Y.%m.%d.%H.%M.%S")"
           echo "TAG_NAME=$TAG_NAME" >> $GITHUB_OUTPUT
 
       - name: Create Release
