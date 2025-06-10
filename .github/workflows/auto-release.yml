@@ -31,17 +31,6 @@ jobs:
           PR_AUTHOR="${{ github.event.pull_request.user.login }}"
           PR_BODY="${{ github.event.pull_request.body }}"
 
-          # 라벨 처리
-          LABELS_JSON='${{ toJson(github.event.pull_request.labels) }}'
-          LABELS=""
-          if [[ "$LABELS_JSON" != "[]" && "$LABELS_JSON" != "null" ]]; then
-            LABELS=$(echo "$LABELS_JSON" | jq -r '.[] | .name' | while read label; do
-              echo "- \`$label\`"
-            done)
-          else
-            LABELS="- *No labels*"
-          fi
-
           # 릴리즈 노트 본문 생성
           RELEASE_BODY="## PR Information
 
@@ -49,10 +38,6 @@ jobs:
           **PR Title**: $PR_TITLE
           **Author**: @$PR_AUTHOR
           **Merged at**: ${{ steps.timestamp.outputs.ISO_TIME }}
-
-          ## Labels
-
-          $LABELS
 
           ## PR Description
 
