@@ -49,7 +49,8 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          echo "${{ steps.release_body.outputs.RELEASE_BODY }}" > release_notes.md
           gh release create "${{ steps.tag.outputs.TAG_NAME }}" \
             --title "${{ steps.timestamp.outputs.KOREAN_TIME }}" \
-            --notes "${{ steps.release_body.outputs.RELEASE_BODY }}" \
+            --notes-file release_notes.md \
             --target ${{ github.sha }}
