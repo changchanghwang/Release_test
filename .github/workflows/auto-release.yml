@@ -17,32 +17,27 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Generate ISO timestamp
+      - name: Generate timestamp
         id: timestamp
         run: echo "KOREAN_TIME=$(TZ='Asia/Seoul' date +"%Y-%m-%d %H:%M:%S")" >> $GITHUB_OUTPUT
 
       - name: Create Release Note Body
         id: release_body
         run: |
-          PR_TITLE="${{ github.event.pull_request.title }}"
-          PR_URL="${{ github.event.pull_request.html_url }}"
-          PR_AUTHOR="${{ github.event.pull_request.user.login }}"
-          PR_BODY="${{ github.event.pull_request.body }}"
+          cat << 'EOF' >> $GITHUB_OUTPUT
+          RELEASE_BODY<<RELEASE_EOF
+          ## PR Information
 
-          RELEASE_BODY="## PR Information
-
-          **PR Link**: $PR_URL
-          **PR Title**: $PR_TITLE
-          **Author**: @$PR_AUTHOR
+          **PR Link**: ${{ github.event.pull_request.html_url }}
+          **PR Title**: ${{ github.event.pull_request.title }}
+          **Author**: @${{ github.event.pull_request.user.login }}
           **Merged at**: ${{ steps.timestamp.outputs.KOREAN_TIME }}
 
           ## PR Description
 
-          $PR_BODY"
-
-          echo "RELEASE_BODY<<EOF" >> $GITHUB_OUTPUT
-          echo "$RELEASE_BODY" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+          ${{ github.event.pull_request.body }}
+          RELEASE_EOF
+          EOF
 
       - name: Generate tag name
         id: tag
