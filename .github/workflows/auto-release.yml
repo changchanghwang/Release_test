@@ -24,20 +24,25 @@ jobs:
       - name: Create Release Note Body
         id: release_body
         run: |
-          cat << 'EOF' >> $GITHUB_OUTPUT
-          RELEASE_BODY<<RELEASE_EOF
-          ## PR Information
+          PR_TITLE="${{ github.event.pull_request.title }}"
+          PR_URL="${{ github.event.pull_request.html_url }}"
+          PR_AUTHOR="${{ github.event.pull_request.user.login }}"
+          PR_BODY="${{ github.event.pull_request.body }}"
 
-          **PR Link**: ${{ github.event.pull_request.html_url }}
-          **PR Title**: ${{ github.event.pull_request.title }}
-          **Author**: @${{ github.event.pull_request.user.login }}
+          RELEASE_BODY="## PR Information
+
+          **PR Link**: $PR_URL
+          **PR Title**: $PR_TITLE
+          **Author**: @$PR_AUTHOR
           **Merged at**: ${{ steps.timestamp.outputs.KOREAN_TIME }}
 
           ## PR Description
 
-          ${{ github.event.pull_request.body }}
-          RELEASE_EOF
-          EOF
+          $PR_BODY"
+
+          echo "RELEASE_BODY<<EOF" >> $GITHUB_OUTPUT
+          echo "$RELEASE_BODY" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Generate tag name
         id: tag
