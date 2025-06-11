@@ -1,4 +1,4 @@
-name: Auto Release Note Generator
+name: Auto Release
 
 on:
   pull_request:
@@ -8,7 +8,7 @@ on:
 
 jobs:
   create-release:
-    if: github.event.pull_request.merged == true && (github.event.pull_request.base.ref == 'main')
+    if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main'
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -19,35 +19,27 @@ jobs:
 
       - name: Generate ISO timestamp
         id: timestamp
-        run: echo "ISO_TIME=$(TZ='Asia/Seoul' date +"%Y-%m-%d %H:%M:%S")" >> $GITHUB_OUTPUT
+        run: echo "KOREAN_TIME=$(TZ='Asia/Seoul' date +"%Y-%m-%d %H:%M:%S")" >> $GITHUB_OUTPUT
 
       - name: Create Release Note Body
         id: release_body
         run: |
-          # PR 정보 추출
-          PR_NUMBER="${{ github.event.pull_request.number }}"
           PR_TITLE="${{ github.event.pull_request.title }}"
           PR_URL="${{ github.event.pull_request.html_url }}"
           PR_AUTHOR="${{ github.event.pull_request.user.login }}"
           PR_BODY="${{ github.event.pull_request.body }}"
 
-          # 릴리즈 노트 본문 생성
           RELEASE_BODY="## PR Information
 
           **PR Link**: $PR_URL
           **PR Title**: $PR_TITLE
           **Author**: @$PR_AUTHOR
-          **Merged at**: ${{ steps.timestamp.outputs.ISO_TIME }}
+          **Merged at**: ${{ steps.timestamp.outputs.KOREAN_TIME }}
 
           ## PR Description
 
-          $PR_BODY
+          $PR_BODY"
 
-          ---
-
-          *This release was automatically generated from PR #$PR_NUMBER*"
-
-          # 멀티라인 출력을 위한 처리
           echo "RELEASE_BODY<<EOF" >> $GITHUB_OUTPUT
           echo "$RELEASE_BODY" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
@@ -63,6 +55,6 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh release create "${{ steps.tag.outputs.TAG_NAME }}" \
-            --title "${{ steps.timestamp.outputs.ISO_TIME }}" \
+            --title "${{ steps.timestamp.outputs.KOREAN_TIME }}" \
             --notes "${{ steps.release_body.outputs.RELEASE_BODY }}" \
             --target ${{ github.sha }}
