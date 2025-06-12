@@ -58,4 +58,4 @@ jobs:
             --target ${{ github.sha }}
       - name: Delete assets
         run: |
-          gh release delete-asset "${{ steps.tag.outputs.TAG_NAME }}" 'Source code.zip' -y
+          gh release delete-asset "${{ steps.tag.outputs.TAG_NAME }}" 'release_test-${{ steps.tag.outputs.TAG_NAME }}.zip' -y
