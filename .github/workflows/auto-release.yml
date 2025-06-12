@@ -56,3 +56,6 @@ jobs:
             --title "${{ steps.timestamp.outputs.KOREAN_TIME }}" \
             --notes-file release_notes.md \
             --target ${{ github.sha }}
+      - name: Delete assets
+        run: |
+          gh release delete-asset "${{ steps.tag.outputs.TAG_NAME }}" 'Source code.zip' -y
