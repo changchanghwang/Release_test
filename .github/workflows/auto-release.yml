@@ -60,4 +60,4 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release delete-asset "${{ steps.tag.outputs.TAG_NAME }}" "release_test-${{ steps.tag.outputs.TAG_NAME }}.zip" -y
+          gh release delete-asset "${{ steps.tag.outputs.TAG_NAME }}" "release_test-${{ steps.timestamp.outputs.KOREAN_TIME }}.zip" -y
