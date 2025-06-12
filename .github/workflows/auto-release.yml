@@ -57,5 +57,7 @@ jobs:
             --notes-file release_notes.md \
             --target ${{ github.sha }}
       - name: Delete assets
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh release delete-asset "${{ steps.tag.outputs.TAG_NAME }}" "release_test-${{ steps.tag.outputs.TAG_NAME }}.zip" -y
